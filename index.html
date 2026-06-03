@@ -490,4 +490,14 @@
   document.querySelectorAll('.tabbtn').forEach(function(b){
     b.addEventListener('click',function(){
       document.querySelectorAll('.tabbtn').forEach(function(x){ x.classList.remove('active'); });
-      b.cl
+      b.classList.add('active');
+      var sel=b.getAttribute('data-panel');
+      document.getElementById('panel-calc').style.display=(sel==='panel-calc')?'block':'none';
+      document.getElementById('panel-alloc').style.display=(sel==='panel-alloc')?'block':'none';
+    });
+  });
+  buildRows(); compute();
+})();
+</script>
+</body>
+</html>
