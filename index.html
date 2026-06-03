@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เครื่องคำนวณค่าใช้จ่ายผิดนัดชำระ — โมโต24</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap">
+<style>
+  :root{
+    --navy:#2A2D8F; --navy-dark:#20226E; --orange:#F07F1A; --orange-dark:#8A4408;
+    --orange-tint:#FDEEDD; --line:#E2E3EF; --text:#22243F; --muted:#6B6D85;
+    --bg:#F4F5FB; --card:#FFFFFF; --danger:#C0392B;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:'Kanit',sans-serif; margin:0; background:var(--bg); color:var(--text);
+    -webkit-font-smoothing:antialiased; padding:24px 16px;
+  }
+  .wrap{max-width:920px; margin:0 auto;}
+  .header{
+    background:var(--navy); border-radius:14px; padding:20px 24px;
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+  }
+  .logo{
+    background:var(--navy-dark); border:1.5px solid rgba(255,255,255,0.18);
+    border-radius:10px; padding:12px 20px 10px; text-align:center;
+  }
+  .logo-mark{font-size:48px; font-weight:700; line-height:1; color:#fff; white-space:nowrap;}
+  .logo-mark b{color:var(--orange); font-weight:700;}
+  .logo-name{display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-top:4px; color:#fff; font-size:14px; font-weight:500; white-space:nowrap;}
+  .logo-name .ln{height:2px; width:24px; background:#fff; border-radius:2px; display:inline-block;}
+  .header h1{color:#fff; font-size:28px; font-weight:600; margin:0; line-height:1.25;}
+  .header .sub{color:#B9BBEC; font-size:13px; margin-top:3px;}
+  .toolbar{margin:18px 0; display:flex; gap:10px; flex-wrap:wrap;}
+  .btn{
+    font-family:'Kanit',sans-serif; font-size:14px; cursor:pointer;
+    border-radius:8px; padding:8px 16px; border:1.5px solid var(--navy);
+    background:#fff; color:var(--navy); font-weight:500; transition:.15s;
+  }
+  .btn:hover{background:var(--navy); color:#fff;}
+  .btn.primary{background:var(--orange); border-color:var(--orange); color:#fff;}
+  .btn.primary:hover{background:#d96e10; border-color:#d96e10;}
+  .sec-title{display:flex; align-items:center; gap:9px; margin:26px 0 12px; font-size:16px; font-weight:500;}
+  .sec-title .bar{width:6px; height:22px; background:var(--orange); border-radius:3px; flex:none;}
+  .sec-title .note{font-size:12px; color:var(--muted); font-weight:400;}
+  .rate-box{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    padding:12px 16px; background:var(--orange-tint); border-radius:10px; margin-bottom:14px;
+  }
+  .rate-box label{font-size:14px; color:var(--orange-dark);}
+  input{font-family:'Kanit',sans-serif; font-size:14px; color:var(--text);
+    border:1px solid var(--line); border-radius:8px; padding:7px 10px; background:#fff;}
+  input:focus{outline:none; border-color:var(--navy); box-shadow:0 0 0 3px rgba(42,45,143,0.12);}
+  .dwrap{position:relative; display:flex; align-items:center; gap:3px;}
+  .dwrap input[type=text]{flex:1; min-width:0; width:100%;}
+  .cal{flex:none; cursor:pointer; border:1px solid var(--line); background:#fff;
+    border-radius:6px; padding:5px 6px; font-size:14px; line-height:1; color:var(--navy);}
+  .cal:hover{background:#EDEEF6; border-color:var(--navy);}
+  .hd{position:absolute; right:0; bottom:0; width:1px; height:1px; opacity:0; border:0; padding:0; pointer-events:none;}
+  .card{border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--card);}
+  .scroll{overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-size:14px;}
+  thead.main tr{background:var(--navy);}
+  thead.main th{color:#fff; font-weight:500; padding:12px 10px; text-align:right; white-space:nowrap;}
+  thead.main th.l{text-align:left;}
+  tbody td{padding:8px 10px; border-top:1px solid var(--line);}
+  td.r{text-align:right;} td.c{text-align:center;}
+  .tbl1{width:100%; table-layout:fixed;}
+  .tbl1 thead.main th{white-space:normal; padding:10px 6px; font-size:13px; line-height:1.3;}
+  .tbl1 tbody td{padding:8px 6px;}
+  .tbl1 input{padding:6px 6px; font-size:13px;}
+  .tbl1 tfoot td{padding:11px 6px; font-size:13px;}
+  .tbl-alloc{width:100%; table-layout:fixed;}
+  .tbl-alloc thead.main th{white-space:normal; padding:10px 6px; font-size:13px; line-height:1.3;}
+  .tbl-alloc tbody td{padding:8px 6px; font-size:13px;}
+  .tbl-alloc tfoot td{padding:11px 6px; font-size:13px;}
+  .pay-full{background:#E1F5EE; color:#0F6E56;}
+  .pay-part{background:#FAEEDA; color:#854F0B;}
+  .pay-none{background:#FCEBEB; color:#A32D2D;}
+  .stepb{display:inline-block; min-width:15px; height:15px; line-height:15px; padding:0 3px;
+    border-radius:8px; background:var(--navy); color:#fff; font-size:9px; text-align:center; margin-right:4px; vertical-align:1px;}
+  .cdet{font-size:10px; font-weight:400; margin-top:3px; line-height:1.25; opacity:0.9;}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:10px;}
+  .legend .lg{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:4px;}
+  tfoot tr{background:var(--orange-tint); font-weight:500;}
+  tfoot td{padding:12px 10px; color:var(--orange-dark);}
+  .kv td{padding:11px 16px; border-top:1px solid var(--line); font-size:14px;}
+  .kv tr:first-child td{border-top:none;}
+  .kv .k{color:var(--muted);}
+  .kv .v{text-align:right; font-weight:500;}
+  .kv tr.total{background:var(--orange-tint);}
+  .kv tr.total td{color:var(--orange-dark); font-weight:500;}
+  .del{font-family:'Kanit',sans-serif; cursor:pointer; border:1px solid var(--line);
+    background:#fff; color:var(--danger); border-radius:6px; padding:3px 9px; font-size:13px;}
+  .del:hover{background:#fdecea; border-color:#f0b4ad;}
+  .grand{
+    margin-top:28px; padding:20px 24px; background:var(--navy);
+    border-radius:12px; border-left:6px solid var(--orange);
+    display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap;
+  }
+  .grand .lbl{color:#fff; font-size:22px; font-weight:600;}
+  .grand .amt{color:var(--orange); font-size:30px; font-weight:700;}
+  .grand .desc{color:#B9BBEC; font-size:12px; width:100%; margin-top:4px;}
+  .formula{
+    margin-top:20px; padding:14px 16px; background:#EDEEF6; border-radius:10px;
+    font-size:13px; color:var(--muted); line-height:1.9;
+  }
+  .formula b{color:var(--text); font-weight:500;}
+  .tabs{display:flex; gap:6px; margin:20px 0 22px; border-bottom:2px solid var(--line);}
+  .tabbtn{font-family:'Kanit',sans-serif; font-size:16px; cursor:pointer; border:none; background:none;
+    padding:10px 20px; color:var(--muted); font-weight:500; border-bottom:3px solid transparent; margin-bottom:-2px;}
+  .tabbtn.active{color:var(--navy); border-bottom-color:var(--orange);}
+  .tabbtn:hover{color:var(--navy);}
+  .danger{color:var(--danger);}
+  .foot{text-align:center; color:var(--muted); font-size:12px; margin-top:24px;}
+  @media print{
+    body{background:#fff; padding:0;}
+    .toolbar{display:none;}
+    .add-row{display:none;}
+    .cal{display:none;}
+    .tabs{display:none;}
+    .panel{display:block !important;}
+    input{border:none; padding:2px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-mark">โมโต<b>24</b></div>
+      <div class="logo-name"><span class="ln"></span>บริษัท โมโต24 จำกัด<span class="ln"></span></div>
+    </div>
+    <div>
+      <h1>เครื่องคำนวณค่าใช้จ่ายผิดนัดชำระ</h1>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn primary" onclick="window.print()">🖨 พิมพ์ / บันทึก PDF</button>
+    <button class="btn" id="resetBtn">↺ ล้างข้อมูล</button>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tabbtn active" data-panel="panel-calc">คำนวณค่าใช้จ่ายผิดนัด</button>
+    <button type="button" class="tabbtn" data-panel="panel-alloc">ลำดับการตัดชำระหนี้</button>
+  </div>
+
+  <div class="panel" id="panel-calc">
+  <div class="sec-title"><span class="bar"></span>ส่วนที่ 1 — เบี้ยปรับผิดนัด</div>
+
+  <div class="rate-box">
+    <label>อัตราเบี้ยปรับต่อปี</label>
+    <input type="number" id="rate" value="5" readonly tabindex="-1" style="width:70px; background:#E6E7F0; color:var(--navy); font-weight:500; cursor:not-allowed;">
+    <span style="font-size:14px; color:var(--orange-dark);">% ต่อปี (คงที่)</span>
+  </div>
+
+  <div class="card scroll">
+    <table class="tbl1">
+      <colgroup>
+        <col style="width:28px;">
+        <col style="width:17%;">
+        <col style="width:23%;">
+        <col style="width:23%;">
+        <col style="width:13%;">
+        <col style="width:16%;">
+        <col style="width:30px;">
+      </colgroup>
+      <thead class="main">
+        <tr>
+          <th class="l">#</th>
+          <th>ยอดค่างวดที่ค้าง (บาท)</th>
+          <th class="l">วันครบกำหนดชำระ</th>
+          <th class="l">วันที่ชำระจริง</th>
+          <th>จำนวนวันผิดนัด</th>
+          <th>เบี้ยปรับ (บาท)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" class="r">รวมเบี้ยปรับ</td>
+          <td class="r" id="totDays">0</td>
+          <td class="r" id="totPenalty">0.00</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <button class="btn add-row" id="addBtn" style="margin-top:12px;">+ เพิ่มงวด</button>
+
+  <div class="sec-title"><span class="bar"></span>ส่วนที่ 2 — ค่าติดตามทวงถาม<span class="note">(อัตโนมัติจากส่วนที่ 1)</span></div>
+  <div class="card">
+    <table class="kv">
+      <tr><td class="k">จำนวนงวดที่ค้างชำระ</td><td class="v"><span id="nGoal">0</span> งวด</td></tr>
+      <tr><td class="k">รอบที่ค้างชำระ 1 งวด ( × 50 บาท/รอบ )</td><td class="v"><span id="fee1">0.00</span> บาท</td></tr>
+      <tr><td class="k">รอบที่ค้างชำระ 2 งวดขึ้นไป ( × 100 บาท/รอบ )</td><td class="v"><span id="fee2">0.00</span> บาท</td></tr>
+      <tr class="total"><td>รวมค่าติดตามทวงถาม</td><td class="v"><span id="feeTot">0.00</span> บาท</td></tr>
+    </table>
+  </div>
+
+  <div class="sec-title"><span class="bar"></span>ส่วนที่ 3 — ค่าลงพื้นที่ติดตามทวงถามหนี้</div>
+  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">สมมติลงพื้นที่จริงทุกรอบที่เข้าเงื่อนไข</div>
+  <div class="card">
+    <table class="kv">
+      <tr><td class="k">รอบที่เข้าเงื่อนไขเรียกเก็บ ( ค้างมากกว่า 1 งวด )</td><td class="v"><span id="visitRounds">0</span> รอบ</td></tr>
+      <tr><td class="k">ค่าลงพื้นที่ต่อรอบ ( เพดานสูงสุด )</td><td class="v">400.00 บาท</td></tr>
+      <tr class="total"><td>รวมค่าลงพื้นที่</td><td class="v"><span id="visitTot">0.00</span> บาท</td></tr>
+    </table>
+  </div>
+
+  <div class="grand">
+    <span class="lbl">รวมค่าใช้จ่ายผิดนัดทั้งหมด</span>
+    <span class="amt"><span id="grand">0.00</span> บาท</span>
+    <span class="desc">เบี้ยปรับ + ค่าติดตามทวงถาม + ค่าลงพื้นที่</span>
+  </div>
+
+  <div class="formula">
+    <div><b>เบี้ยปรับ</b> = ปัด 2 ( ยอดค้าง × อัตราต่อปี% × วันผิดนัด ÷ 365 )</div>
+    <div><b>จำนวนวันผิดนัด</b> = วันที่ชำระจริง − วันครบกำหนดชำระ</div>
+    <div><b>ค่าติดตามทวงถาม</b> = (1 รอบ × 50) + ((จำนวนงวด − 1) รอบ × 100)</div>
+    <div><b>ค่าลงพื้นที่</b> = (จำนวนงวด − 1) รอบ × 400</div>
+  </div>
+  </div>
+
+  <div class="panel" id="panel-alloc" style="display:none;">
+  <div class="sec-title"><span class="bar"></span>ส่วนที่ 4 — ลำดับการตัดชำระหนี้<span class="note">(ตามเกณฑ์ BOT)</span></div>
+  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">ตัดทีละงวดจากงวดที่ค้างนานที่สุดก่อน · แต่ละงวด = ค่างวด + ค่าปรับ + ค่าติดตาม · ค่าติดตามรวมค่าลงพื้นที่แล้ว (งวดใหม่สุด 50 / งวดที่เก่ากว่า 100+400)</div>
+
+  <div class="rate-box" style="background:#EDEEF6;">
+    <label style="color:var(--navy);">ยอดเงินที่ลูกค้าชำระเข้ามา</label>
+    <input type="number" id="payIn" step="0.01" min="0" placeholder="0.00" style="width:150px;">
+    <span style="font-size:14px; color:var(--navy);">บาท</span>
+  </div>
+
+  <div class="card scroll">
+    <table class="tbl-alloc">
+      <colgroup>
+        <col style="width:20%;">
+        <col style="width:14%;">
+        <col style="width:12%;">
+        <col style="width:14%;">
+        <col style="width:14%;">
+        <col style="width:14%;">
+        <col style="width:12%;">
+      </colgroup>
+      <thead class="main">
+        <tr>
+          <th class="l">รายการค่างวด</th>
+          <th>ค่างวด</th>
+          <th>ค่าปรับ</th>
+          <th>ค่าติดตาม + ลงพื้นที่</th>
+          <th>รวมทั้งงวด</th>
+          <th>ยอดรับชำระ</th>
+          <th>คงเหลือ</th>
+        </tr>
+      </thead>
+      <tbody id="allocRows"></tbody>
+      <tfoot>
+        <tr>
+          <td class="r">รวม</td>
+          <td class="r" id="aGowd">0.00</td>
+          <td class="r" id="aPen">0.00</td>
+          <td class="r" id="aFollow">0.00</td>
+          <td class="r" id="aClaim">0.00</td>
+          <td class="r" id="aPaid">0.00</td>
+          <td class="r" id="aLeft">0.00</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div class="legend">
+    <span><span class="lg pay-full"></span>ตัดครบ</span>
+    <span><span class="lg pay-part"></span>ตัดบางส่วน</span>
+    <span><span class="lg pay-none"></span>ยังไม่ถูกตัด</span>
+    <span><span class="stepb">1</span>ลำดับการตัด (ค่างวด → ค่าปรับ → ค่าติดตาม, งวดเก่าสุดก่อน)</span>
+  </div>
+
+  <div class="grand" style="margin-top:18px;">
+    <span class="lbl">คงเหลือค้างชำระ</span>
+    <span class="amt"><span id="leftTot">0.00</span> บาท</span>
+    <span class="desc">ยอดหนี้รวม (ตามลำดับตัด) <span id="debtTot">0.00</span> บาท · ชำระแล้ว <span id="paidShow">0.00</span> บาท</span>
+  </div>
+
+  <div class="formula">
+    <div><b>ลำดับการตัด (BOT)</b> = ตัดงวดเก่าสุดก่อน · ในแต่ละงวดตัดเรียง ค่างวด → ค่าปรับ → ค่าติดตาม จนหมดงวดแล้วไปงวดถัดไป งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง</div>
+    <div><b>ค่าติดตาม (ส่วนที่ 4)</b> = งวดใหม่สุด 50 บาท · งวดที่ค้างเก่ากว่า 100 + 400 (รวมค่าลงพื้นที่แล้ว)</div>
+  </div>
+  </div>
+
+  <div class="foot">บริษัท โมโต24 จำกัด · เครื่องคำนวณค่าใช้จ่ายผิดนัดชำระ</div>
+</div>
+
+<script>
+(function(){
+  var rowsEl=document.getElementById('rows');
+  var nf=new Intl.NumberFormat('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+  var nf0=new Intl.NumberFormat('th-TH');
+  var data=[{amt:'',due:'',paid:''},{amt:'',due:'',paid:''},{amt:'',due:'',paid:''}];
+
+  function parseDMY(s){
+    if(!s) return null;
+    var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{3,4})$/);
+    if(!m) return null;
+    var d=+m[1],mo=+m[2],y=+m[3];
+    if(mo<1||mo>12||d<1||d>31) return null;
+    var dt=new Date(y,mo-1,d);
+    if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d) return null;
+    return dt;
+  }
+  function formatDMY(v){
+    var g=v.replace(/\D/g,'').slice(0,8);
+    if(g.length>4) return g.slice(0,2)+'/'+g.slice(2,4)+'/'+g.slice(4);
+    if(g.length>2) return g.slice(0,2)+'/'+g.slice(2);
+    return g;
+  }
+  function daysBetween(due,paid){
+    var d1=parseDMY(due),d2=parseDMY(paid);
+    if(!d1||!d2) return null;
+    return Math.round((d2-d1)/86400000);
+  }
+  function calcPenalty(amt,days,rate){
+    if(amt===''||amt===null||days===null) return null;
+    var a=parseFloat(amt); if(isNaN(a)) return null;
+    return Math.round(a*(rate/100)*days/365*100)/100;
+  }
+  function buildRows(){
+    rowsEl.innerHTML='';
+    data.forEach(function(r,i){
+      var tr=document.createElement('tr');
+      tr.innerHTML=
+        '<td style="color:var(--muted);">'+(i+1)+'</td>'+
+        '<td><input type="number" inputmode="decimal" data-i="'+i+'" data-f="amt" value="'+r.amt+'" style="width:100%; text-align:right;" placeholder="0.00"></td>'+
+        '<td><div class="dwrap"><input type="text" inputmode="numeric" maxlength="10" data-i="'+i+'" data-f="due" value="'+r.due+'" placeholder="วว/ดด/ปปปป"><button type="button" class="cal" data-cal="due" data-i="'+i+'" aria-label="เลือกจากปฏิทิน">📅</button><input type="date" class="hd" data-hd="due" data-i="'+i+'" tabindex="-1"></div></td>'+
+        '<td><div class="dwrap"><input type="text" inputmode="numeric" maxlength="10" data-i="'+i+'" data-f="paid" value="'+r.paid+'" placeholder="วว/ดด/ปปปป"><button type="button" class="cal" data-cal="paid" data-i="'+i+'" aria-label="เลือกจากปฏิทิน">📅</button><input type="date" class="hd" data-hd="paid" data-i="'+i+'" tabindex="-1"></div></td>'+
+        '<td class="r" id="days-'+i+'">—</td>'+
+        '<td class="r" id="pen-'+i+'" style="font-weight:500;">—</td>'+
+        '<td class="c"><button class="del" data-del="'+i+'" title="ลบงวด">✕</button></td>';
+      rowsEl.appendChild(tr);
+    });
+  }
+  function compute(){
+    var rate=parseFloat(document.getElementById('rate').value)||0;
+    var totD=0,totP=0,nGoal=0,active=[];
+    data.forEach(function(r,i){
+      var days=daysBetween(r.due,r.paid);
+      var pen=calcPenalty(r.amt,days,rate);
+      var a=parseFloat(r.amt);
+      if(!isNaN(a)&&a>0){ nGoal++; active.push({amt:a, pen:(pen||0), due:r.due, days:days}); }
+      if(days!==null) totD+=days;
+      if(pen!==null) totP+=pen;
+      var dEl=document.getElementById('days-'+i);
+      var pEl=document.getElementById('pen-'+i);
+      if(dEl){ dEl.textContent=(days===null?'—':nf0.format(days)); dEl.className='r'+(days!==null&&days<0?' danger':''); }
+      if(pEl){ pEl.textContent=(pen===null?'—':nf.format(pen)); }
+    });
+    document.getElementById('totDays').textContent=nf0.format(totD);
+    document.getElementById('totPenalty').textContent=nf.format(totP);
+
+    var r1=nGoal>=1?1:0, r2=nGoal>=2?(nGoal-1):0;
+    var f1=r1*50,f2=r2*100,feeTot=f1+f2;
+    document.getElementById('nGoal').textContent=nf0.format(nGoal);
+    document.getElementById('fee1').textContent=nf.format(f1);
+    document.getElementById('fee2').textContent=nf.format(f2);
+    document.getElementById('feeTot').textContent=nf.format(feeTot);
+
+    var vr=nGoal>=2?(nGoal-1):0, visitTot=vr*400;
+    document.getElementById('visitRounds').textContent=nf0.format(vr);
+    document.getElementById('visitTot').textContent=nf.format(visitTot);
+
+    document.getElementById('grand').textContent=nf.format(totP+feeTot+visitTot);
+
+    active.sort(function(x,y){
+      var dx=parseDMY(x.due), dy=parseDMY(y.due);
+      if(dx&&dy) return dx-dy;
+      if(dx&&!dy) return -1;
+      if(!dx&&dy) return 1;
+      return 0;
+    });
+    var lastIdx=active.length-1;
+    active.forEach(function(it,idx){ it.follow=(idx===lastIdx?50:500); });
+    var pay=parseFloat(document.getElementById('payIn').value)||0;
+    var remain=pay, debtTot=0, paidTot=0, leftTot=0, sumG=0, sumP=0, sumF=0, step=0;
+    var ar=document.getElementById('allocRows');
+    ar.innerHTML='';
+    function compCell(val,st,sn,cv){
+      var cls = st==='full'?' pay-full':st==='part'?' pay-part':st==='none'?' pay-none':'';
+      var badge = sn>0?'<span class="stepb">'+sn+'</span>':'';
+      var det='';
+      if(val>0){
+        var rem=Math.round((val-cv)*100)/100;
+        if(st==='full') det='<div class="cdet">ตัดครบ</div>';
+        else if(st==='part') det='<div class="cdet">ตัด '+nf.format(cv)+' · ค้าง '+nf.format(rem)+'</div>';
+        else det='<div class="cdet">ค้าง '+nf.format(rem)+'</div>';
+      }
+      return '<td class="r'+cls+'">'+badge+nf.format(val)+det+'</td>';
+    }
+    active.forEach(function(it,idx){
+      var comps={amt:it.amt, pen:it.pen, follow:it.follow};
+      var status={amt:'zero', pen:'zero', follow:'zero'};
+      var sn={amt:0, pen:0, follow:0};
+      var cov={amt:0, pen:0, follow:0};
+      var coveredTotal=0;
+      ['amt','pen','follow'].forEach(function(k){
+        var v=comps[k];
+        if(v>0){
+          var c=Math.round(Math.min(remain,v)*100)/100;
+          cov[k]=c; coveredTotal+=c;
+          status[k]= c>=v ? 'full' : (c>0 ? 'part' : 'none');
+          remain=Math.round((remain-c)*100)/100;
+          sn[k]=++step;
+        }
+      });
+      var claim=Math.round((it.amt+it.pen+it.follow)*100)/100;
+      var applied=Math.round(coveredTotal*100)/100;
+      var left=Math.round((claim-applied)*100)/100;
+      debtTot+=claim; paidTot+=applied; leftTot+=left;
+      sumG+=it.amt; sumP+=it.pen; sumF+=it.follow;
+      var tr=document.createElement('tr');
+      tr.innerHTML=
+        '<td>งวดที่ '+(idx+1)+(it.due?'<div class="cdet" style="opacity:.75; font-weight:400;">ดิว '+it.due+(it.days!=null?' · ค้าง '+nf0.format(it.days)+' วัน':'')+'</div>':'')+'</td>'+
+        compCell(it.amt, status.amt, sn.amt, cov.amt)+
+        compCell(it.pen, status.pen, sn.pen, cov.pen)+
+        compCell(it.follow, status.follow, sn.follow, cov.follow)+
+        '<td class="r">'+nf.format(claim)+'</td>'+
+        '<td class="r" style="color:var(--orange-dark);">'+(applied>0?'(-) '+nf.format(applied):'0.00')+'</td>'+
+        '<td class="r" style="font-weight:500;'+(left>0?'color:var(--danger);':'')+'">'+nf.format(left)+'</td>';
+      ar.appendChild(tr);
+    });
+    if(active.length===0){ ar.innerHTML='<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:14px;">กรอกยอดค่างวดในส่วนที่ 1 ก่อน</td></tr>'; }
+    document.getElementById('aGowd').textContent=nf.format(sumG);
+    document.getElementById('aPen').textContent=nf.format(sumP);
+    document.getElementById('aFollow').textContent=nf.format(sumF);
+    document.getElementById('aClaim').textContent=nf.format(debtTot);
+    document.getElementById('aPaid').textContent=nf.format(paidTot);
+    document.getElementById('aLeft').textContent=nf.format(leftTot);
+    document.getElementById('leftTot').textContent=nf.format(leftTot);
+    document.getElementById('debtTot').textContent=nf.format(debtTot);
+    document.getElementById('paidShow').textContent=nf.format(pay);
+  }
+  rowsEl.addEventListener('input',function(e){
+    var i=e.target.getAttribute('data-i'),f=e.target.getAttribute('data-f');
+    if(i!==null){
+      if(f==='due'||f==='paid'){ e.target.value=formatDMY(e.target.value); }
+      data[i][f]=e.target.value; compute();
+    }
+  });
+  function pad2(n){ return (n<10?'0':'')+n; }
+  rowsEl.addEventListener('click',function(e){
+    var b=e.target.closest('[data-del]');
+    if(b){ data.splice(+b.getAttribute('data-del'),1); if(data.length===0)data.push({amt:'',due:'',paid:''}); buildRows(); compute(); return; }
+    var cal=e.target.closest('[data-cal]');
+    if(cal){
+      var i=cal.getAttribute('data-i'), f=cal.getAttribute('data-cal');
+      var hd=rowsEl.querySelector('.hd[data-i="'+i+'"][data-hd="'+f+'"]');
+      if(hd){
+        var dt=parseDMY(data[i][f]);
+        if(dt){ hd.value=dt.getFullYear()+'-'+pad2(dt.getMonth()+1)+'-'+pad2(dt.getDate()); }
+        try{ hd.showPicker(); }catch(err){ hd.focus(); hd.click(); }
+      }
+    }
+  });
+  rowsEl.addEventListener('change',function(e){
+    var hd=e.target.closest('.hd');
+    if(hd){
+      var i=hd.getAttribute('data-i'), f=hd.getAttribute('data-hd'), v=hd.value;
+      if(v){
+        var p=v.split('-'), dmy=p[2]+'/'+p[1]+'/'+p[0];
+        data[i][f]=dmy;
+        var tx=rowsEl.querySelector('input[data-i="'+i+'"][data-f="'+f+'"]');
+        if(tx) tx.value=dmy;
+        compute();
+      }
+    }
+  });
+  document.getElementById('addBtn').addEventListener('click',function(){ data.push({amt:'',due:'',paid:''}); buildRows(); compute(); });
+  document.getElementById('rate').addEventListener('input',compute);
+  document.getElementById('payIn').addEventListener('input',compute);
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    data=[{amt:'',due:'',paid:''},{amt:'',due:'',paid:''},{amt:'',due:'',paid:''}];
+    document.getElementById('rate').value='5'; document.getElementById('payIn').value=''; buildRows(); compute();
+  });
+  document.querySelectorAll('.tabbtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.tabbtn').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      var sel=b.getAttribute('data-panel');
+      document.getElementById('panel-calc').style.display=(sel==='panel-calc')?'block':'none';
+      document.getElementById('panel-alloc').style.display=(sel==='panel
