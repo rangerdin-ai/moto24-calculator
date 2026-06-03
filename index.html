@@ -195,7 +195,7 @@
 
   <button class="btn add-row" id="addBtn" style="margin-top:12px;">+ เพิ่มงวด</button>
 
-  <div class="sec-title"><span class="bar"></span>ส่วนที่ 2 — ค่าติดตามทวงถาม<span class="note">(อัตโนมัติจากส่วนที่ 1)</span></div>
+  <div class="sec-title"><span class="bar"></span>ส่วนที่ 2 — ค่าติดตามทวงถาม<span class="note">(อัตโนมัติจากส่วนที่ 1 · คิดสูงสุด 3 งวด)</span></div>
   <div class="card">
     <table class="kv">
       <tr><td class="k">จำนวนงวดที่ค้างชำระ</td><td class="v"><span id="nGoal">0</span> งวด</td></tr>
@@ -206,7 +206,7 @@
   </div>
 
   <div class="sec-title"><span class="bar"></span>ส่วนที่ 3 — ค่าลงพื้นที่ติดตามทวงถามหนี้</div>
-  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">สมมติลงพื้นที่จริงทุกรอบที่เข้าเงื่อนไข</div>
+  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">สมมติลงพื้นที่จริงทุกรอบที่เข้าเงื่อนไข · เริ่มงวดที่ 2 คิดสูงสุดถึงงวดที่ 3 (สูงสุด 800)</div>
   <div class="card">
     <table class="kv">
       <tr><td class="k">รอบที่เข้าเงื่อนไขเรียกเก็บ ( ค้างมากกว่า 1 งวด )</td><td class="v"><span id="visitRounds">0</span> รอบ</td></tr>
@@ -224,8 +224,8 @@
   <div class="formula">
     <div><b>เบี้ยปรับ</b> = ปัด 2 ( ยอดค้าง × อัตราต่อปี% × วันผิดนัด ÷ 365 )</div>
     <div><b>จำนวนวันผิดนัด</b> = วันที่ชำระจริง − วันครบกำหนดชำระ</div>
-    <div><b>ค่าติดตามทวงถาม</b> = (1 รอบ × 50) + ((จำนวนงวด − 1) รอบ × 100)</div>
-    <div><b>ค่าลงพื้นที่</b> = (จำนวนงวด − 1) รอบ × 400</div>
+    <div><b>ค่าติดตามทวงถาม</b> = 50 (งวดแรก) + 100 ต่องวด (งวดที่ 2-3) · สูงสุด 50+100+100 = 250</div>
+    <div><b>ค่าลงพื้นที่</b> = 400 ต่องวด (งวดที่ 2-3) · สูงสุด 400+400 = 800 (ค้างเกิน 3 งวด/90 วัน สัญญาถูกยกเลิก)</div>
   </div>
   </div>
 
@@ -364,14 +364,15 @@
     document.getElementById('totDays').textContent=nf0.format(totD);
     document.getElementById('totPenalty').textContent=nf.format(totP);
 
-    var r1=nGoal>=1?1:0, r2=nGoal>=2?(nGoal-1):0;
+    var ncap=Math.min(nGoal,3);
+    var r1=ncap>=1?1:0, r2=ncap>=2?(ncap-1):0;
     var f1=r1*50,f2=r2*100,feeTot=f1+f2;
     document.getElementById('nGoal').textContent=nf0.format(nGoal);
     document.getElementById('fee1').textContent=nf.format(f1);
     document.getElementById('fee2').textContent=nf.format(f2);
     document.getElementById('feeTot').textContent=nf.format(feeTot);
 
-    var vr=nGoal>=2?(nGoal-1):0, visitTot=vr*400;
+    var vr=ncap>=2?(ncap-1):0, visitTot=vr*400;
     document.getElementById('visitRounds').textContent=nf0.format(vr);
     document.getElementById('visitTot').textContent=nf.format(visitTot);
 
@@ -384,7 +385,7 @@
       if(!dx&&dy) return 1;
       return 0;
     });
-    active.forEach(function(it,idx){ it.follow=(idx===0?50:500); });
+    active.forEach(function(it,idx){ it.follow=(idx===0?50:(idx<=2?500:0)); });
     var pay=parseFloat(document.getElementById('payIn').value)||0;
     var remain=pay, debtTot=0, paidTot=0, leftTot=0, sumG=0, sumP=0, sumF=0, step=0;
     var ar=document.getElementById('allocRows');
@@ -489,14 +490,4 @@
   document.querySelectorAll('.tabbtn').forEach(function(b){
     b.addEventListener('click',function(){
       document.querySelectorAll('.tabbtn').forEach(function(x){ x.classList.remove('active'); });
-      b.classList.add('active');
-      var sel=b.getAttribute('data-panel');
-      document.getElementById('panel-calc').style.display=(sel==='panel-calc')?'block':'none';
-      document.getElementById('panel-alloc').style.display=(sel==='panel-alloc')?'block':'none';
-    });
-  });
-  buildRows(); compute();
-})();
-</script>
-</body>
-</html>
+      b.cl
