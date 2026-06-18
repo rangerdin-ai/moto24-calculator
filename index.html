@@ -176,6 +176,8 @@
     <label>อัตราเบี้ยปรับต่อปี</label>
     <input type="number" id="rate" value="5" readonly tabindex="-1" style="width:70px; background:#E6E7F0; color:var(--navy); font-weight:500; cursor:not-allowed;">
     <span style="font-size:14px; color:var(--orange-dark);">% ต่อปี (คงที่)</span>
+    <span style="margin-left:auto; font-size:14px; color:var(--orange-dark);">วันที่คำนวณ (วันนี้)</span>
+    <input type="text" id="calcDate" inputmode="numeric" maxlength="10" placeholder="วว/ดด/ปปปป" style="width:120px;">
   </div>
 
   <div class="card scroll">
@@ -201,6 +203,7 @@
         </tr>
       </thead>
       <tbody id="rows"></tbody>
+      <tbody id="runBody"></tbody>
       <tfoot>
         <tr>
           <td colspan="2" class="r">รวม</td>
@@ -215,6 +218,10 @@
   </div>
 
   <button class="btn add-row" id="addBtn" style="margin-top:12px;">+ เพิ่มงวด</button>
+  <div style="margin-top:12px; padding:10px 14px; background:#FFF6EC; border:1px solid #F4C98A; border-radius:9px; font-size:12.5px; color:var(--orange-dark); line-height:1.65;">
+    <b style="color:#7a3d06;">ยอดที่เดินถึงวันนี้</b> = ค่าปรับ + ค่าติดตามของงวดที่เลยดิวแล้ว นับถึงวันที่คำนวณ — <b>ถ้าลูกค้าจ่ายวันนี้ต้องเก็บยอดนี้</b> · ระบบจะแสดงยอดนี้ในแถวงวด "ดิวถัดไป" (รอบบิลหน้า) ส่วนงวดที่ยังไม่ถึงดิวจะขึ้น "ยังไม่ถึงดิว"
+    <div id="runRecap" style="margin-top:6px; display:none;"></div>
+  </div>
 
   <div class="sec-title"><span class="bar"></span>ส่วนที่ 2 — ค่าติดตามทวงถาม<span class="note">(คิดในงวดถัดจากที่เริ่มค้าง · สูงสุด 3 รอบ)</span></div>
   <div class="card">
@@ -252,13 +259,13 @@
 
   <div class="panel" id="panel-alloc" style="display:none;">
   <div class="sec-title"><span class="bar"></span>ส่วนที่ 4 — ลำดับการตัดชำระหนี้</div>
-  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">ตัดทีละงวดจากงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่าปรับ → ค่าติดตาม → ค่างวด · ค่าติดตามรวมค่าลงพื้นที่แล้ว</div>
+  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">ตัดทีละงวดจากงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่างวด → ค่าปรับ → ค่าติดตาม · ค่าติดตามรวมค่าลงพื้นที่แล้ว</div>
 
   <div class="info">
     <span class="h">💡 ลำดับการตัดเงินที่ลูกค้าจ่ายเข้ามา</span>
     <ul>
       <li>ตัด <b>งวดเก่าสุดก่อน</b> เคลียร์งวดนั้นให้หมดก่อนค่อยไปงวดถัดไป</li>
-      <li>ในแต่ละงวดตัดเรียง <b>ค่าปรับ → ค่าติดตาม → ค่างวด</b> (ค่างวด/เงินต้นตัดท้ายสุด)</li>
+      <li>ในแต่ละงวดตัดเรียง <b>ค่างวด → ค่าปรับ → ค่าติดตาม</b> (ค่างวด/เงินต้นตัดท้ายสุด)</li>
       <li>อ่านการไหลจาก <b>ขวาไปซ้าย</b> ตามเลขลำดับ ① ② ③ — สีเขียว = ตัดครบ, เหลือง = ตัดบางส่วน, แดง = ยังไม่ถูกตัด</li>
     </ul>
     <div class="ex">งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง และคงค้างนั้นจะถูกนำไปคิดเบี้ยปรับต่อในงวดถัดไป</div>
@@ -275,8 +282,8 @@
       <colgroup>
         <col style="width:20%;">
         <col style="width:14%;">
-        <col style="width:15%;">
         <col style="width:12%;">
+        <col style="width:15%;">
         <col style="width:13%;">
         <col style="width:14%;">
         <col style="width:12%;">
@@ -285,8 +292,8 @@
         <tr>
           <th class="l">รายการค่างวด</th>
           <th>ค่างวด</th>
-          <th>ค่าติดตาม + ลงพื้นที่</th>
           <th>ค่าปรับ</th>
+          <th>ค่าติดตาม + ลงพื้นที่</th>
           <th>รวมทั้งงวด</th>
           <th>ยอดรับชำระ</th>
           <th>คงเหลือ</th>
@@ -297,8 +304,8 @@
         <tr>
           <td class="r">รวม</td>
           <td class="r" id="aGowd">0.00</td>
-          <td class="r" id="aFollow">0.00</td>
           <td class="r" id="aPen">0.00</td>
+          <td class="r" id="aFollow">0.00</td>
           <td class="r" id="aClaim">0.00</td>
           <td class="r" id="aPaid">0.00</td>
           <td class="r" id="aLeft">0.00</td>
@@ -311,17 +318,18 @@
     <span><span class="lg pay-full"></span>ตัดครบ</span>
     <span><span class="lg pay-part"></span>ตัดบางส่วน</span>
     <span><span class="lg pay-none"></span>ยังไม่ถูกตัด</span>
-    <span><span class="stepb">1</span>ลำดับการตัด (ค่าปรับ → ค่าติดตาม → ค่างวด, งวดเก่าสุดก่อน)</span>
+    <span><span class="stepb">1</span>ลำดับการตัด (ค่างวด → ค่าปรับ → ค่าติดตาม, งวดเก่าสุดก่อน)</span>
   </div>
 
   <div class="grand" style="margin-top:18px;">
     <span class="lbl">คงเหลือค้างชำระ</span>
     <span class="amt"><span id="leftTot">0.00</span> บาท</span>
     <span class="desc">ยอดหนี้รวม (ตามลำดับตัด) <span id="debtTot">0.00</span> บาท · ชำระแล้ว <span id="paidShow">0.00</span> บาท</span>
+    <div id="advLine" style="width:100%; margin-top:6px; color:#B9BBEC; font-size:12px; display:none;"></div>
   </div>
 
   <div class="formula">
-    <div><b>ลำดับการตัด</b> = ตัดงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่าปรับ → ค่าติดตาม → ค่างวด จนหมดงวดแล้วไปงวดถัดไป งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง</div>
+    <div><b>ลำดับการตัด</b> = ตัดงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่างวด → ค่าปรับ → ค่าติดตาม จนหมดงวดแล้วไปงวดถัดไป งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง</div>
     <div><b>ค่าติดตาม (ส่วนที่ 4)</b> = ค่าติดตามทวงถาม + ค่าลงพื้นที่ของงวดนั้น (ดึงจากส่วนที่ 1)</div>
   </div>
   </div>
@@ -373,38 +381,53 @@
   }
 
   function compute(){
+    var calcDt=parseDMY(document.getElementById('calcDate').value);
     var priorCount=0, cumPrev=0, prevDue=null;
     var totGowd=0, totPen=0, totFollow=0, totVisit=0, totBundle=0;
     var rounds50=0, rounds100=0, visitRounds=0, nGoal=0;
+    var firstFutureIdx=-1, firstFutureDue='';
+    var futureList=[], lastAmt=0, lastDueStr='';
     var alloc=[];
 
     data.forEach(function(r,i){
       var a=parseFloat(r.amt);
-      var valid=!isNaN(a)&&a>0;
+      var hasAmt=!isNaN(a)&&a>0;
       var dueDt=parseDMY(r.due);
-      var gap=(prevDue&&dueDt)?Math.round((dueDt-prevDue)/86400000):null;
-      var pen=(valid&&cumPrev>0&&gap!==null&&gap>0)?r2(cumPrev*(RATE/100)/365*gap):0;
-      var follow=0, visit=0;
-      if(valid){
+      var future=hasAmt&&dueDt&&calcDt&&(dueDt.getTime()>=calcDt.getTime());
+      var overdue=hasAmt&&dueDt&&(!calcDt||dueDt.getTime()<calcDt.getTime());
+      if(hasAmt&&dueDt){ lastAmt=a; lastDueStr=r.due; }
+      var gap=null, pen=0, follow=0, visit=0, bundle=0;
+      if(overdue){
+        gap=prevDue?Math.round((dueDt-prevDue)/86400000):null;
+        pen=(cumPrev>0&&gap!==null&&gap>0)?r2(cumPrev*(RATE/100)/365*gap):0;
         if(priorCount===1){ follow=50; }
         else if(priorCount===2||priorCount===3){ follow=100; visit=400; }
+        bundle=follow+visit;
       }
-      var bundle=follow+visit;
 
       var gEl=document.getElementById('gap-'+i);
       var fEl=document.getElementById('fee-'+i);
       var pEl=document.getElementById('pen-'+i);
-      if(gEl) gEl.textContent=(valid&&gap!==null)?(nf0.format(gap)+' วัน'):'—';
-      if(fEl) fEl.textContent=valid?nf.format(bundle):'—';
-      if(pEl){
-        if(valid&&pen>0){
-          pEl.innerHTML=nf.format(pen)+'<div class="cdet" style="opacity:.7;">ฐาน '+nf0.format(cumPrev)+' × '+nf0.format(gap)+' วัน</div>';
-        } else {
-          pEl.innerHTML=valid?'0.00':'—';
+      if(future){
+        if(firstFutureIdx<0){ firstFutureIdx=i; firstFutureDue=r.due; }
+        futureList.push({amt:a, due:r.due});
+        if(gEl) gEl.innerHTML='<span style="color:var(--muted); font-size:11px;">ยังไม่ถึงดิว</span>';;
+        if(fEl) fEl.innerHTML='<span style="color:var(--muted);">—</span>';
+        if(pEl) pEl.innerHTML='<span style="color:var(--muted);">—</span>';
+      } else if(overdue){
+        if(gEl) gEl.textContent=(gap!==null?nf0.format(gap)+' วัน':'—');
+        if(fEl) fEl.textContent=nf.format(bundle);
+        if(pEl){
+          if(pen>0){ pEl.innerHTML=nf.format(pen)+'<div class="cdet" style="opacity:.7;">ฐาน '+nf0.format(cumPrev)+' × '+nf0.format(gap)+' วัน</div>'; }
+          else { pEl.innerHTML='0.00'; }
         }
+      } else {
+        if(gEl) gEl.textContent='—';
+        if(fEl) fEl.textContent='—';
+        if(pEl) pEl.innerHTML='—';
       }
 
-      if(valid){
+      if(overdue){
         totGowd+=a; totPen+=pen; totFollow+=follow; totVisit+=visit; totBundle+=bundle;
         if(follow===50) rounds50++;
         if(follow===100) rounds100++;
@@ -412,10 +435,51 @@
         alloc.push({amt:a, pen:pen, follow:bundle, due:r.due, gap:gap});
         nGoal++;
         cumPrev+=a;
-        prevDue=dueDt||prevDue;
+        prevDue=dueDt;
         priorCount++;
       }
     });
+
+    var runGap=(prevDue&&calcDt)?Math.round((calcDt-prevDue)/86400000):null;
+    var runPen=0, runBundle=0, hasRun=false;
+    if(nGoal>0&&runGap!==null&&runGap>0){
+      hasRun=true;
+      runPen=r2(cumPrev*(RATE/100)/365*runGap);
+      var rF=0, rV=0;
+      if(priorCount===1){ rF=50; } else if(priorCount===2||priorCount===3){ rF=100; rV=400; }
+      runBundle=rF+rV;
+      totPen+=runPen; totFollow+=rF; totVisit+=rV; totBundle+=runBundle;
+      if(rF===50) rounds50++;
+      if(rF===100) rounds100++;
+      if(rV===400) visitRounds++;
+      alloc.push({amt:0, pen:runPen, follow:runBundle, due:document.getElementById('calcDate').value, gap:runGap, isRun:true});
+    }
+    var rb=document.getElementById('runBody');
+    var recap=document.getElementById('runRecap');
+    if(hasRun && firstFutureIdx>=0){
+      var gE=document.getElementById('gap-'+firstFutureIdx);
+      var fE=document.getElementById('fee-'+firstFutureIdx);
+      var pE=document.getElementById('pen-'+firstFutureIdx);
+      if(gE) gE.innerHTML=nf0.format(runGap)+' วัน<div class="cdet" style="opacity:.85; color:var(--orange-dark);">เดินถึงวันนี้</div>';
+      if(fE) fE.innerHTML='<span style="color:var(--orange-dark); font-weight:500;">'+nf.format(runBundle)+'</span>';
+      if(pE) pE.innerHTML='<span style="color:var(--orange-dark);">'+nf.format(runPen)+'</span><div class="cdet" style="opacity:.75;">ฐาน '+nf0.format(cumPrev)+' &#215; '+nf0.format(runGap)+' วัน · บิลออกงวดนี้</div>';
+      rb.innerHTML='';
+    } else if(hasRun){
+      rb.innerHTML='<tr style="background:#FFF6EC;">'+
+        '<td style="color:var(--orange-dark);">&#8594;</td>'+
+        '<td style="color:var(--orange-dark); font-weight:500;">ค้างถึงวันนี้<div class="cdet" style="opacity:.9;">ณ '+document.getElementById('calcDate').value+' · บิลออกรอบถัดไป</div></td>'+
+        '<td class="r" style="color:var(--muted);">&#8212;</td>'+
+        '<td class="r">'+nf0.format(runGap)+' วัน</td>'+
+        '<td class="r" style="font-weight:500;">'+nf.format(runBundle)+'</td>'+
+        '<td class="r" style="font-weight:500;">'+nf.format(runPen)+'<div class="cdet" style="opacity:.7;">ฐาน '+nf0.format(cumPrev)+' &#215; '+nf0.format(runGap)+' วัน</div></td>'+
+        '<td></td></tr>';
+    } else { rb.innerHTML=''; }
+    if(recap){
+      if(hasRun){
+        recap.style.display='block';
+        recap.innerHTML='<b style="color:#7a3d06;">ยอดเดินถึงวันนี้ (ณ '+document.getElementById('calcDate').value+')</b> = เบี้ยปรับ '+nf.format(runPen)+' + ค่าติดตาม '+nf.format(runBundle)+' = <b>'+nf.format(r2(runPen+runBundle))+' บาท</b>'+(firstFutureIdx>=0?(' — แสดงในแถวดิว '+firstFutureDue+' (บิลออกงวดนั้น)'):' — ถ้าลูกค้าจ่ายวันนี้ต้องเก็บยอดนี้');
+      } else { recap.style.display='none'; }
+    }
 
     document.getElementById('totGowd').textContent=nf.format(totGowd);
     document.getElementById('totFee').textContent=nf.format(totBundle);
@@ -432,7 +496,21 @@
     document.getElementById('grand').textContent=nf.format(totPen+totFollow+totVisit);
 
     var pay=parseFloat(document.getElementById('payIn').value)||0;
-    var remain=pay, debtTot=0, paidTot=0, leftTot=0, sumG=0, sumP=0, sumF=0, step=0;
+    var needBase=0; alloc.forEach(function(x){ needBase+=x.amt+x.pen+x.follow; });
+    var aDue=lastDueStr, aAmt=lastAmt;
+    futureList.forEach(function(fr){ alloc.push({amt:fr.amt, pen:0, follow:0, due:fr.due, isAdvance:true}); needBase+=fr.amt; aDue=fr.due; aAmt=fr.amt; });
+    if(pay>needBase+0.001 && aAmt>0 && aDue){
+      var pd=parseDMY(aDue), guard=0, need=needBase;
+      while(pd && pay>need+0.001 && guard<60){
+        pd=new Date(pd.getFullYear(), pd.getMonth()+1, pd.getDate());
+        var ds=pad2(pd.getDate())+'/'+pad2(pd.getMonth()+1)+'/'+pd.getFullYear();
+        alloc.push({amt:aAmt, pen:0, follow:0, due:ds, isAdvance:true, auto:true});
+        need+=aAmt; guard++;
+      }
+    }
+
+    var remain=pay, paidTot=0, sumG=0, sumP=0, sumF=0, step=0, gn=0;
+    var leftOverdue=0, advancePaid=0, debtOverdue=0;
     var ar=document.getElementById('allocRows');
     ar.innerHTML='';
     function compCell(val,st,sn,cv){
@@ -442,18 +520,18 @@
       if(val>0){
         var rem=r2(val-cv);
         if(st==='full') det='<div class="cdet">ตัดครบ</div>';
-        else if(st==='part') det='<div class="cdet">ตัด '+nf.format(cv)+' · ค้าง '+nf.format(rem)+'</div>';
-        else det='<div class="cdet">ค้าง '+nf.format(rem)+'</div>';
+        else if(st==='part') det='<div class="cdet">ตัด '+nf.format(cv)+' · เหลือ '+nf.format(rem)+'</div>';
+        else det='<div class="cdet">ยังไม่ตัด</div>';
       }
       return '<td class="r'+cls+'">'+badge+nf.format(val)+det+'</td>';
     }
-    alloc.forEach(function(it,idx){
+    alloc.forEach(function(it){
       var comps={amt:it.amt, pen:it.pen, follow:it.follow};
       var status={amt:'zero', pen:'zero', follow:'zero'};
       var sn={amt:0, pen:0, follow:0};
       var cov={amt:0, pen:0, follow:0};
       var coveredTotal=0;
-      ['pen','follow','amt'].forEach(function(k){
+      ['amt','pen','follow'].forEach(function(k){
         var v=comps[k];
         if(v>0){
           var c=r2(Math.min(remain,v));
@@ -466,29 +544,44 @@
       var claim=r2(it.amt+it.pen+it.follow);
       var applied=r2(coveredTotal);
       var left=r2(claim-applied);
-      debtTot+=claim; paidTot+=applied; leftTot+=left;
+      paidTot+=applied;
       sumG+=it.amt; sumP+=it.pen; sumF+=it.follow;
+      if(it.isAdvance){ advancePaid+=applied; }
+      else { debtOverdue+=claim; leftOverdue+=left; }
+      var label, sub;
+      if(it.isRun){ label='ค้างปัจจุบัน'; sub=it.due?('ถึง '+it.due+(it.gap!=null?' · '+nf0.format(it.gap)+' วัน':'')):''; }
+      else if(it.isAdvance){ label='<span style="color:#185FA5;">ล่วงหน้า'+(it.auto?' (อัตโนมัติ)':'')+'</span>'; sub=it.due?('ดิว '+it.due):''; }
+      else { gn++; label='งวดที่ '+gn; sub=it.due?('ดิว '+it.due+(it.gap!=null?' · '+nf0.format(it.gap)+' วัน':'')):''; }
+      var rowbg=it.isAdvance?' style="background:#EAF1FB;"':'';
       var tr=document.createElement('tr');
       tr.innerHTML=
-        '<td>งวดที่ '+(idx+1)+(it.due?'<div class="cdet" style="opacity:.75; font-weight:400;">ดิว '+it.due+(it.gap!=null?' · ห่าง '+nf0.format(it.gap)+' วัน':'')+'</div>':'')+'</td>'+
+        '<td'+rowbg+'>'+label+(sub?'<div class="cdet" style="opacity:.75; font-weight:400;">'+sub+'</div>':'')+'</td>'+
         compCell(it.amt, status.amt, sn.amt, cov.amt)+
-        compCell(it.follow, status.follow, sn.follow, cov.follow)+
         compCell(it.pen, status.pen, sn.pen, cov.pen)+
+        compCell(it.follow, status.follow, sn.follow, cov.follow)+
         '<td class="r">'+nf.format(claim)+'</td>'+
         '<td class="r" style="color:var(--orange-dark);">'+(applied>0?'(-) '+nf.format(applied):'0.00')+'</td>'+
-        '<td class="r" style="font-weight:500;'+(left>0?'color:var(--danger);':'')+'">'+nf.format(left)+'</td>';
+        '<td class="r" style="font-weight:500;'+(left>0&&!it.isAdvance?'color:var(--danger);':'')+'">'+nf.format(left)+'</td>';
       ar.appendChild(tr);
     });
     if(alloc.length===0){ ar.innerHTML='<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:14px;">กรอกค่างวดและวันดิวในส่วนที่ 1 ก่อน</td></tr>'; }
+    var overflow=r2(remain);
     document.getElementById('aGowd').textContent=nf.format(sumG);
     document.getElementById('aFollow').textContent=nf.format(sumF);
     document.getElementById('aPen').textContent=nf.format(sumP);
-    document.getElementById('aClaim').textContent=nf.format(debtTot);
+    document.getElementById('aClaim').textContent=nf.format(r2(sumG+sumP+sumF));
     document.getElementById('aPaid').textContent=nf.format(paidTot);
-    document.getElementById('aLeft').textContent=nf.format(leftTot);
-    document.getElementById('leftTot').textContent=nf.format(leftTot);
-    document.getElementById('debtTot').textContent=nf.format(debtTot);
+    document.getElementById('aLeft').textContent=nf.format(r2(sumG+sumP+sumF-paidTot));
+    document.getElementById('leftTot').textContent=nf.format(leftOverdue);
+    document.getElementById('debtTot').textContent=nf.format(debtOverdue);
     document.getElementById('paidShow').textContent=nf.format(pay);
+    var advEl=document.getElementById('advLine');
+    if(advEl){
+      if(advancePaid>0||overflow>0){
+        advEl.style.display='block';
+        advEl.innerHTML='ชำระล่วงหน้า '+nf.format(advancePaid)+' บาท'+(overflow>0?(' · รับเกิน/ทอน '+nf.format(overflow)+' บาท'):'');
+      } else { advEl.style.display='none'; }
+    }
   }
 
   rowsEl.addEventListener('input',function(e){
@@ -527,9 +620,11 @@
   });
   document.getElementById('addBtn').addEventListener('click',function(){ data.push({amt:'',due:''}); buildRows(); compute(); });
   document.getElementById('payIn').addEventListener('input',compute);
+  document.getElementById('calcDate').addEventListener('input',function(e){ e.target.value=formatDMY(e.target.value); compute(); });
+  function setToday(){ var d=new Date(); document.getElementById('calcDate').value=pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear(); }
   document.getElementById('resetBtn').addEventListener('click',function(){
     data=[{amt:'',due:''},{amt:'',due:''},{amt:'',due:''}];
-    document.getElementById('payIn').value=''; buildRows(); compute();
+    document.getElementById('payIn').value=''; setToday(); buildRows(); compute();
   });
   document.querySelectorAll('.tabbtn').forEach(function(b){
     b.addEventListener('click',function(){
@@ -540,6 +635,7 @@
       document.getElementById('panel-alloc').style.display=(sel==='panel-alloc')?'block':'none';
     });
   });
+  setToday();
   buildRows(); compute();
 })();
 </script>
