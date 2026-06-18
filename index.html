@@ -259,13 +259,13 @@
 
   <div class="panel" id="panel-alloc" style="display:none;">
   <div class="sec-title"><span class="bar"></span>ส่วนที่ 4 — ลำดับการตัดชำระหนี้</div>
-  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">ตัดทีละงวดจากงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่างวด → ค่าปรับ → ค่าติดตาม · ค่าติดตามรวมค่าลงพื้นที่แล้ว</div>
+  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">ตัดทีละงวดจากงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่าปรับ → ค่าติดตาม → ค่างวด · ค่าติดตามรวมค่าลงพื้นที่แล้ว</div>
 
   <div class="info">
     <span class="h">💡 ลำดับการตัดเงินที่ลูกค้าจ่ายเข้ามา</span>
     <ul>
       <li>ตัด <b>งวดเก่าสุดก่อน</b> เคลียร์งวดนั้นให้หมดก่อนค่อยไปงวดถัดไป</li>
-      <li>ในแต่ละงวดตัดเรียง <b>ค่างวด → ค่าปรับ → ค่าติดตาม</b> (ค่างวด/เงินต้นตัดท้ายสุด)</li>
+      <li>ในแต่ละงวดตัดเรียง <b>ค่าปรับ → ค่าติดตาม → ค่างวด</b> (ค่างวด/เงินต้นตัดท้ายสุด)</li>
       <li>อ่านการไหลจาก <b>ขวาไปซ้าย</b> ตามเลขลำดับ ① ② ③ — สีเขียว = ตัดครบ, เหลือง = ตัดบางส่วน, แดง = ยังไม่ถูกตัด</li>
     </ul>
     <div class="ex">งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง และคงค้างนั้นจะถูกนำไปคิดเบี้ยปรับต่อในงวดถัดไป</div>
@@ -282,8 +282,8 @@
       <colgroup>
         <col style="width:20%;">
         <col style="width:14%;">
-        <col style="width:12%;">
         <col style="width:15%;">
+        <col style="width:12%;">
         <col style="width:13%;">
         <col style="width:14%;">
         <col style="width:12%;">
@@ -292,8 +292,8 @@
         <tr>
           <th class="l">รายการค่างวด</th>
           <th>ค่างวด</th>
-          <th>ค่าปรับ</th>
           <th>ค่าติดตาม + ลงพื้นที่</th>
+          <th>ค่าปรับ</th>
           <th>รวมทั้งงวด</th>
           <th>ยอดรับชำระ</th>
           <th>คงเหลือ</th>
@@ -304,8 +304,8 @@
         <tr>
           <td class="r">รวม</td>
           <td class="r" id="aGowd">0.00</td>
-          <td class="r" id="aPen">0.00</td>
           <td class="r" id="aFollow">0.00</td>
+          <td class="r" id="aPen">0.00</td>
           <td class="r" id="aClaim">0.00</td>
           <td class="r" id="aPaid">0.00</td>
           <td class="r" id="aLeft">0.00</td>
@@ -318,7 +318,7 @@
     <span><span class="lg pay-full"></span>ตัดครบ</span>
     <span><span class="lg pay-part"></span>ตัดบางส่วน</span>
     <span><span class="lg pay-none"></span>ยังไม่ถูกตัด</span>
-    <span><span class="stepb">1</span>ลำดับการตัด (ค่างวด → ค่าปรับ → ค่าติดตาม, งวดเก่าสุดก่อน)</span>
+    <span><span class="stepb">1</span>ลำดับการตัด (ค่าปรับ → ค่าติดตาม → ค่างวด, งวดเก่าสุดก่อน)</span>
   </div>
 
   <div class="grand" style="margin-top:18px;">
@@ -329,7 +329,7 @@
   </div>
 
   <div class="formula">
-    <div><b>ลำดับการตัด</b> = ตัดงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่างวด → ค่าปรับ → ค่าติดตาม จนหมดงวดแล้วไปงวดถัดไป งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง</div>
+    <div><b>ลำดับการตัด</b> = ตัดงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่าปรับ → ค่าติดตาม → ค่างวด จนหมดงวดแล้วไปงวดถัดไป งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง</div>
     <div><b>ค่าติดตาม (ส่วนที่ 4)</b> = ค่าติดตามทวงถาม + ค่าลงพื้นที่ของงวดนั้น (ดึงจากส่วนที่ 1)</div>
   </div>
   </div>
@@ -531,7 +531,7 @@
       var sn={amt:0, pen:0, follow:0};
       var cov={amt:0, pen:0, follow:0};
       var coveredTotal=0;
-      ['amt','pen','follow'].forEach(function(k){
+      ['pen','follow','amt'].forEach(function(k){
         var v=comps[k];
         if(v>0){
           var c=r2(Math.min(remain,v));
@@ -557,8 +557,8 @@
       tr.innerHTML=
         '<td'+rowbg+'>'+label+(sub?'<div class="cdet" style="opacity:.75; font-weight:400;">'+sub+'</div>':'')+'</td>'+
         compCell(it.amt, status.amt, sn.amt, cov.amt)+
-        compCell(it.pen, status.pen, sn.pen, cov.pen)+
         compCell(it.follow, status.follow, sn.follow, cov.follow)+
+        compCell(it.pen, status.pen, sn.pen, cov.pen)+
         '<td class="r">'+nf.format(claim)+'</td>'+
         '<td class="r" style="color:var(--orange-dark);">'+(applied>0?'(-) '+nf.format(applied):'0.00')+'</td>'+
         '<td class="r" style="font-weight:500;'+(left>0&&!it.isAdvance?'color:var(--danger);':'')+'">'+nf.format(left)+'</td>';
