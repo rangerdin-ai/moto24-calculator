@@ -247,9 +247,9 @@
       <colgroup>
         <col style="width:20%;">
         <col style="width:14%;">
+        <col style="width:15%;">
         <col style="width:12%;">
-        <col style="width:14%;">
-        <col style="width:14%;">
+        <col style="width:13%;">
         <col style="width:14%;">
         <col style="width:12%;">
       </colgroup>
@@ -257,8 +257,8 @@
         <tr>
           <th class="l">รายการค่างวด</th>
           <th>ค่างวด</th>
-          <th>ค่าปรับ</th>
           <th>ค่าติดตาม + ลงพื้นที่</th>
+          <th>ค่าปรับ</th>
           <th>รวมทั้งงวด</th>
           <th>ยอดรับชำระ</th>
           <th>คงเหลือ</th>
@@ -269,8 +269,8 @@
         <tr>
           <td class="r">รวม</td>
           <td class="r" id="aGowd">0.00</td>
-          <td class="r" id="aPen">0.00</td>
           <td class="r" id="aFollow">0.00</td>
+          <td class="r" id="aPen">0.00</td>
           <td class="r" id="aClaim">0.00</td>
           <td class="r" id="aPaid">0.00</td>
           <td class="r" id="aLeft">0.00</td>
@@ -444,8 +444,8 @@
       tr.innerHTML=
         '<td>งวดที่ '+(idx+1)+(it.due?'<div class="cdet" style="opacity:.75; font-weight:400;">ดิว '+it.due+(it.gap!=null?' · ห่าง '+nf0.format(it.gap)+' วัน':'')+'</div>':'')+'</td>'+
         compCell(it.amt, status.amt, sn.amt, cov.amt)+
-        compCell(it.pen, status.pen, sn.pen, cov.pen)+
         compCell(it.follow, status.follow, sn.follow, cov.follow)+
+        compCell(it.pen, status.pen, sn.pen, cov.pen)+
         '<td class="r">'+nf.format(claim)+'</td>'+
         '<td class="r" style="color:var(--orange-dark);">'+(applied>0?'(-) '+nf.format(applied):'0.00')+'</td>'+
         '<td class="r" style="font-weight:500;'+(left>0?'color:var(--danger);':'')+'">'+nf.format(left)+'</td>';
