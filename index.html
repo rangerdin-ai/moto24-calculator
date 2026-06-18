@@ -151,7 +151,8 @@
   </div>
 
   <div class="panel" id="panel-calc">
-  <div class="sec-title"><span class="bar"></span>ส่วนที่ 1 — เบี้ยปรับผิดนัด</div>
+  <div class="sec-title"><span class="bar"></span>ส่วนที่ 1 — เบี้ยปรับผิดนัด <span class="note">(ดอกเบี้ยผิดนัดสะสมรายเดือน)</span></div>
+  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">เบี้ยปรับ = (ยอดค้างสะสม × 5% ÷ 365) × วันค้างของช่วงนั้น · วันค้างคำนวณอัตโนมัติจากผลต่างวันดิว · งวดแรกยังไม่มีเบี้ยปรับ (เริ่มคิดงวดถัดไป)</div>
 
   <div class="rate-box">
     <label>อัตราเบี้ยปรับต่อปี</label>
@@ -163,20 +164,20 @@
     <table class="tbl1">
       <colgroup>
         <col style="width:28px;">
+        <col style="width:24%;">
         <col style="width:17%;">
-        <col style="width:23%;">
-        <col style="width:23%;">
         <col style="width:13%;">
-        <col style="width:16%;">
-        <col style="width:30px;">
+        <col style="width:18%;">
+        <col style="width:20%;">
+        <col style="width:28px;">
       </colgroup>
       <thead class="main">
         <tr>
           <th class="l">#</th>
-          <th>ยอดค่างวดที่ค้าง (บาท)</th>
-          <th class="l">วันครบกำหนดชำระ</th>
-          <th class="l">วันที่ชำระจริง</th>
-          <th>จำนวนวันผิดนัด</th>
+          <th class="l">วันครบกำหนด (ดิว)</th>
+          <th>ค่างวด (บาท)</th>
+          <th>วันค้าง</th>
+          <th>ค่าติดตาม+ลงพื้นที่</th>
           <th>เบี้ยปรับ (บาท)</th>
           <th></th>
         </tr>
@@ -184,9 +185,11 @@
       <tbody id="rows"></tbody>
       <tfoot>
         <tr>
-          <td colspan="4" class="r">รวมเบี้ยปรับ</td>
-          <td class="r" id="totDays">0</td>
-          <td class="r" id="totPenalty">0.00</td>
+          <td colspan="2" class="r">รวม</td>
+          <td class="r" id="totGowd">0.00</td>
+          <td></td>
+          <td class="r" id="totFee">0.00</td>
+          <td class="r" id="totPen">0.00</td>
           <td></td>
         </tr>
       </tfoot>
@@ -195,7 +198,7 @@
 
   <button class="btn add-row" id="addBtn" style="margin-top:12px;">+ เพิ่มงวด</button>
 
-  <div class="sec-title"><span class="bar"></span>ส่วนที่ 2 — ค่าติดตามทวงถาม<span class="note">(อัตโนมัติจากส่วนที่ 1 · คิดสูงสุด 3 งวด)</span></div>
+  <div class="sec-title"><span class="bar"></span>ส่วนที่ 2 — ค่าติดตามทวงถาม<span class="note">(คิดในงวดถัดจากที่เริ่มค้าง · สูงสุด 3 รอบ)</span></div>
   <div class="card">
     <table class="kv">
       <tr><td class="k">จำนวนงวดที่ค้างชำระ</td><td class="v"><span id="nGoal">0</span> งวด</td></tr>
@@ -206,7 +209,7 @@
   </div>
 
   <div class="sec-title"><span class="bar"></span>ส่วนที่ 3 — ค่าลงพื้นที่ติดตามทวงถามหนี้</div>
-  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">สมมติลงพื้นที่จริงทุกรอบที่เข้าเงื่อนไข · เริ่มงวดที่ 2 คิดสูงสุดถึงงวดที่ 3 (สูงสุด 800)</div>
+  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">เริ่มคิดเมื่อค้างตั้งแต่ 2 งวดขึ้นไป · 400 บาท/รอบ · คิดสูงสุด 2 รอบ (สูงสุด 800)</div>
   <div class="card">
     <table class="kv">
       <tr><td class="k">รอบที่เข้าเงื่อนไขเรียกเก็บ ( ค้างมากกว่า 1 งวด )</td><td class="v"><span id="visitRounds">0</span> รอบ</td></tr>
@@ -218,20 +221,20 @@
   <div class="grand">
     <span class="lbl">รวมค่าใช้จ่ายผิดนัดทั้งหมด</span>
     <span class="amt"><span id="grand">0.00</span> บาท</span>
-    <span class="desc">เบี้ยปรับ + ค่าติดตามทวงถาม + ค่าลงพื้นที่</span>
+    <span class="desc">เบี้ยปรับ + ค่าติดตามทวงถาม + ค่าลงพื้นที่ (ไม่รวมค่างวด)</span>
   </div>
 
   <div class="formula">
-    <div><b>เบี้ยปรับ</b> = ปัด 2 ( ยอดค้าง × อัตราต่อปี% × วันผิดนัด ÷ 365 )</div>
-    <div><b>จำนวนวันผิดนัด</b> = วันที่ชำระจริง − วันครบกำหนดชำระ</div>
-    <div><b>ค่าติดตามทวงถาม</b> = 50 (งวดแรก) + 100 ต่องวด (งวดที่ 2-3) · สูงสุด 50+100+100 = 250</div>
-    <div><b>ค่าลงพื้นที่</b> = 400 ต่องวด (งวดที่ 2-3) · สูงสุด 400+400 = 800 (ค้างเกิน 3 งวด/90 วัน สัญญาถูกยกเลิก)</div>
+    <div><b>เบี้ยปรับ (รายงวด)</b> = ( ยอดค้างสะสมของงวดก่อนหน้า × 5% ÷ 365 ) × จำนวนวันค้างของช่วงนั้น</div>
+    <div><b>วันค้าง</b> = วันดิวงวดนี้ − วันดิวงวดก่อนหน้า (คำนวณอัตโนมัติ)</div>
+    <div><b>ค่าติดตามทวงถาม</b> = 50 (เมื่อค้าง 1 งวด) + 100 ต่องวด (ค้าง 2-3 งวด) · สูงสุด 250</div>
+    <div><b>ค่าลงพื้นที่</b> = 400 ต่องวด (ค้าง 2-3 งวด) · สูงสุด 800 (ค้างเกิน 3 งวด/90 วัน สัญญาถูกยกเลิก)</div>
   </div>
   </div>
 
   <div class="panel" id="panel-alloc" style="display:none;">
-  <div class="sec-title"><span class="bar"></span>ส่วนที่ 4 — ลำดับการตัดชำระหนี้<span class="note">(ตามเกณฑ์ BOT)</span></div>
-  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">ตัดทีละงวดจากงวดที่ค้างนานที่สุดก่อน · แต่ละงวด = ค่างวด + ค่าปรับ + ค่าติดตาม · ค่าติดตามรวมค่าลงพื้นที่แล้ว (งวดแรกที่ค้าง 50 / งวดที่ 2 ขึ้นไป 100+400)</div>
+  <div class="sec-title"><span class="bar"></span>ส่วนที่ 4 — ลำดับการตัดชำระหนี้</div>
+  <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">ตัดทีละงวดจากงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่าปรับ → ค่าติดตาม → ค่างวด · ค่าติดตามรวมค่าลงพื้นที่แล้ว</div>
 
   <div class="rate-box" style="background:#EDEEF6;">
     <label style="color:var(--navy);">ยอดเงินที่ลูกค้าชำระเข้ามา</label>
@@ -280,7 +283,7 @@
     <span><span class="lg pay-full"></span>ตัดครบ</span>
     <span><span class="lg pay-part"></span>ตัดบางส่วน</span>
     <span><span class="lg pay-none"></span>ยังไม่ถูกตัด</span>
-    <span><span class="stepb">1</span>ลำดับการตัด (ค่างวด → ค่าปรับ → ค่าติดตาม, งวดเก่าสุดก่อน)</span>
+    <span><span class="stepb">1</span>ลำดับการตัด (ค่าปรับ → ค่าติดตาม → ค่างวด, งวดเก่าสุดก่อน)</span>
   </div>
 
   <div class="grand" style="margin-top:18px;">
@@ -290,8 +293,8 @@
   </div>
 
   <div class="formula">
-    <div><b>ลำดับการตัด (BOT)</b> = ตัดงวดเก่าสุดก่อน · ในแต่ละงวดตัดเรียง ค่างวด → ค่าปรับ → ค่าติดตาม จนหมดงวดแล้วไปงวดถัดไป งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง</div>
-    <div><b>ค่าติดตาม (ส่วนที่ 4)</b> = งวดแรกที่ค้าง 50 บาท · งวดที่ 2 ขึ้นไป 100 + 400 (รวมค่าลงพื้นที่แล้ว)</div>
+    <div><b>ลำดับการตัด</b> = ตัดงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่าปรับ → ค่าติดตาม → ค่างวด จนหมดงวดแล้วไปงวดถัดไป งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง</div>
+    <div><b>ค่าติดตาม (ส่วนที่ 4)</b> = ค่าติดตามทวงถาม + ค่าลงพื้นที่ของงวดนั้น (ดึงจากส่วนที่ 1)</div>
   </div>
   </div>
 
@@ -303,7 +306,8 @@
   var rowsEl=document.getElementById('rows');
   var nf=new Intl.NumberFormat('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
   var nf0=new Intl.NumberFormat('th-TH');
-  var data=[{amt:'',due:'',paid:''},{amt:'',due:'',paid:''},{amt:'',due:'',paid:''}];
+  var RATE=5;
+  var data=[{amt:'',due:''},{amt:'',due:''},{amt:'',due:''}];
 
   function parseDMY(s){
     if(!s) return null;
@@ -321,111 +325,124 @@
     if(g.length>2) return g.slice(0,2)+'/'+g.slice(2);
     return g;
   }
-  function daysBetween(due,paid){
-    var d1=parseDMY(due),d2=parseDMY(paid);
-    if(!d1||!d2) return null;
-    return Math.round((d2-d1)/86400000);
-  }
-  function calcPenalty(amt,days,rate){
-    if(amt===''||amt===null||days===null) return null;
-    var a=parseFloat(amt); if(isNaN(a)) return null;
-    return Math.round(a*(rate/100)*days/365*100)/100;
-  }
+  function pad2(n){ return (n<10?'0':'')+n; }
+  function r2(x){ return Math.round(x*100)/100; }
+
   function buildRows(){
     rowsEl.innerHTML='';
     data.forEach(function(r,i){
       var tr=document.createElement('tr');
       tr.innerHTML=
         '<td style="color:var(--muted);">'+(i+1)+'</td>'+
-        '<td><input type="number" inputmode="decimal" data-i="'+i+'" data-f="amt" value="'+r.amt+'" style="width:100%; text-align:right;" placeholder="0.00"></td>'+
         '<td><div class="dwrap"><input type="text" inputmode="numeric" maxlength="10" data-i="'+i+'" data-f="due" value="'+r.due+'" placeholder="วว/ดด/ปปปป"><button type="button" class="cal" data-cal="due" data-i="'+i+'" aria-label="เลือกจากปฏิทิน">📅</button><input type="date" class="hd" data-hd="due" data-i="'+i+'" tabindex="-1"></div></td>'+
-        '<td><div class="dwrap"><input type="text" inputmode="numeric" maxlength="10" data-i="'+i+'" data-f="paid" value="'+r.paid+'" placeholder="วว/ดด/ปปปป"><button type="button" class="cal" data-cal="paid" data-i="'+i+'" aria-label="เลือกจากปฏิทิน">📅</button><input type="date" class="hd" data-hd="paid" data-i="'+i+'" tabindex="-1"></div></td>'+
-        '<td class="r" id="days-'+i+'">—</td>'+
+        '<td><input type="number" inputmode="decimal" data-i="'+i+'" data-f="amt" value="'+r.amt+'" style="width:100%; text-align:right;" placeholder="0.00"></td>'+
+        '<td class="r" id="gap-'+i+'">—</td>'+
+        '<td class="r" id="fee-'+i+'">—</td>'+
         '<td class="r" id="pen-'+i+'" style="font-weight:500;">—</td>'+
         '<td class="c"><button class="del" data-del="'+i+'" title="ลบงวด">✕</button></td>';
       rowsEl.appendChild(tr);
     });
   }
+
   function compute(){
-    var rate=parseFloat(document.getElementById('rate').value)||0;
-    var totD=0,totP=0,nGoal=0,active=[];
+    var priorCount=0, cumPrev=0, prevDue=null;
+    var totGowd=0, totPen=0, totFollow=0, totVisit=0, totBundle=0;
+    var rounds50=0, rounds100=0, visitRounds=0, nGoal=0;
+    var alloc=[];
+
     data.forEach(function(r,i){
-      var days=daysBetween(r.due,r.paid);
-      var pen=calcPenalty(r.amt,days,rate);
       var a=parseFloat(r.amt);
-      if(!isNaN(a)&&a>0){ nGoal++; active.push({amt:a, pen:(pen||0), due:r.due, days:days}); }
-      if(days!==null) totD+=days;
-      if(pen!==null) totP+=pen;
-      var dEl=document.getElementById('days-'+i);
+      var valid=!isNaN(a)&&a>0;
+      var dueDt=parseDMY(r.due);
+      var gap=(prevDue&&dueDt)?Math.round((dueDt-prevDue)/86400000):null;
+      var pen=(valid&&cumPrev>0&&gap!==null&&gap>0)?r2(cumPrev*(RATE/100)/365*gap):0;
+      var follow=0, visit=0;
+      if(valid){
+        if(priorCount===1){ follow=50; }
+        else if(priorCount===2||priorCount===3){ follow=100; visit=400; }
+      }
+      var bundle=follow+visit;
+
+      var gEl=document.getElementById('gap-'+i);
+      var fEl=document.getElementById('fee-'+i);
       var pEl=document.getElementById('pen-'+i);
-      if(dEl){ dEl.textContent=(days===null?'—':nf0.format(days)); dEl.className='r'+(days!==null&&days<0?' danger':''); }
-      if(pEl){ pEl.textContent=(pen===null?'—':nf.format(pen)); }
-    });
-    document.getElementById('totDays').textContent=nf0.format(totD);
-    document.getElementById('totPenalty').textContent=nf.format(totP);
+      if(gEl) gEl.textContent=(valid&&gap!==null)?(nf0.format(gap)+' วัน'):'—';
+      if(fEl) fEl.textContent=valid?nf.format(bundle):'—';
+      if(pEl){
+        if(valid&&pen>0){
+          pEl.innerHTML=nf.format(pen)+'<div class="cdet" style="opacity:.7;">ฐาน '+nf0.format(cumPrev)+' × '+nf0.format(gap)+' วัน</div>';
+        } else {
+          pEl.innerHTML=valid?'0.00':'—';
+        }
+      }
 
-    var ncap=Math.min(nGoal,3);
-    var r1=ncap>=1?1:0, r2=ncap>=2?(ncap-1):0;
-    var f1=r1*50,f2=r2*100,feeTot=f1+f2;
+      if(valid){
+        totGowd+=a; totPen+=pen; totFollow+=follow; totVisit+=visit; totBundle+=bundle;
+        if(follow===50) rounds50++;
+        if(follow===100) rounds100++;
+        if(visit===400) visitRounds++;
+        alloc.push({amt:a, pen:pen, follow:bundle, due:r.due, gap:gap});
+        nGoal++;
+        cumPrev+=a;
+        prevDue=dueDt||prevDue;
+        priorCount++;
+      }
+    });
+
+    document.getElementById('totGowd').textContent=nf.format(totGowd);
+    document.getElementById('totFee').textContent=nf.format(totBundle);
+    document.getElementById('totPen').textContent=nf.format(totPen);
+
     document.getElementById('nGoal').textContent=nf0.format(nGoal);
-    document.getElementById('fee1').textContent=nf.format(f1);
-    document.getElementById('fee2').textContent=nf.format(f2);
-    document.getElementById('feeTot').textContent=nf.format(feeTot);
+    document.getElementById('fee1').textContent=nf.format(rounds50*50);
+    document.getElementById('fee2').textContent=nf.format(rounds100*100);
+    document.getElementById('feeTot').textContent=nf.format(totFollow);
 
-    var vr=ncap>=2?(ncap-1):0, visitTot=vr*400;
-    document.getElementById('visitRounds').textContent=nf0.format(vr);
-    document.getElementById('visitTot').textContent=nf.format(visitTot);
+    document.getElementById('visitRounds').textContent=nf0.format(visitRounds);
+    document.getElementById('visitTot').textContent=nf.format(totVisit);
 
-    document.getElementById('grand').textContent=nf.format(totP+feeTot+visitTot);
+    document.getElementById('grand').textContent=nf.format(totPen+totFollow+totVisit);
 
-    active.sort(function(x,y){
-      var dx=parseDMY(x.due), dy=parseDMY(y.due);
-      if(dx&&dy) return dx-dy;
-      if(dx&&!dy) return -1;
-      if(!dx&&dy) return 1;
-      return 0;
-    });
-    active.forEach(function(it,idx){ it.follow=(idx===0?50:(idx<=2?500:0)); });
     var pay=parseFloat(document.getElementById('payIn').value)||0;
     var remain=pay, debtTot=0, paidTot=0, leftTot=0, sumG=0, sumP=0, sumF=0, step=0;
     var ar=document.getElementById('allocRows');
     ar.innerHTML='';
     function compCell(val,st,sn,cv){
-      var cls = st==='full'?' pay-full':st==='part'?' pay-part':st==='none'?' pay-none':'';
-      var badge = sn>0?'<span class="stepb">'+sn+'</span>':'';
+      var cls=st==='full'?' pay-full':st==='part'?' pay-part':st==='none'?' pay-none':'';
+      var badge=sn>0?'<span class="stepb">'+sn+'</span>':'';
       var det='';
       if(val>0){
-        var rem=Math.round((val-cv)*100)/100;
+        var rem=r2(val-cv);
         if(st==='full') det='<div class="cdet">ตัดครบ</div>';
         else if(st==='part') det='<div class="cdet">ตัด '+nf.format(cv)+' · ค้าง '+nf.format(rem)+'</div>';
         else det='<div class="cdet">ค้าง '+nf.format(rem)+'</div>';
       }
       return '<td class="r'+cls+'">'+badge+nf.format(val)+det+'</td>';
     }
-    active.forEach(function(it,idx){
+    alloc.forEach(function(it,idx){
       var comps={amt:it.amt, pen:it.pen, follow:it.follow};
       var status={amt:'zero', pen:'zero', follow:'zero'};
       var sn={amt:0, pen:0, follow:0};
       var cov={amt:0, pen:0, follow:0};
       var coveredTotal=0;
-      ['amt','pen','follow'].forEach(function(k){
+      ['pen','follow','amt'].forEach(function(k){
         var v=comps[k];
         if(v>0){
-          var c=Math.round(Math.min(remain,v)*100)/100;
+          var c=r2(Math.min(remain,v));
           cov[k]=c; coveredTotal+=c;
           status[k]= c>=v ? 'full' : (c>0 ? 'part' : 'none');
-          remain=Math.round((remain-c)*100)/100;
+          remain=r2(remain-c);
           sn[k]=++step;
         }
       });
-      var claim=Math.round((it.amt+it.pen+it.follow)*100)/100;
-      var applied=Math.round(coveredTotal*100)/100;
-      var left=Math.round((claim-applied)*100)/100;
+      var claim=r2(it.amt+it.pen+it.follow);
+      var applied=r2(coveredTotal);
+      var left=r2(claim-applied);
       debtTot+=claim; paidTot+=applied; leftTot+=left;
       sumG+=it.amt; sumP+=it.pen; sumF+=it.follow;
       var tr=document.createElement('tr');
       tr.innerHTML=
-        '<td>งวดที่ '+(idx+1)+(it.due?'<div class="cdet" style="opacity:.75; font-weight:400;">ดิว '+it.due+(it.days!=null?' · ค้าง '+nf0.format(it.days)+' วัน':'')+'</div>':'')+'</td>'+
+        '<td>งวดที่ '+(idx+1)+(it.due?'<div class="cdet" style="opacity:.75; font-weight:400;">ดิว '+it.due+(it.gap!=null?' · ห่าง '+nf0.format(it.gap)+' วัน':'')+'</div>':'')+'</td>'+
         compCell(it.amt, status.amt, sn.amt, cov.amt)+
         compCell(it.pen, status.pen, sn.pen, cov.pen)+
         compCell(it.follow, status.follow, sn.follow, cov.follow)+
@@ -434,7 +451,7 @@
         '<td class="r" style="font-weight:500;'+(left>0?'color:var(--danger);':'')+'">'+nf.format(left)+'</td>';
       ar.appendChild(tr);
     });
-    if(active.length===0){ ar.innerHTML='<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:14px;">กรอกยอดค่างวดในส่วนที่ 1 ก่อน</td></tr>'; }
+    if(alloc.length===0){ ar.innerHTML='<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:14px;">กรอกค่างวดและวันดิวในส่วนที่ 1 ก่อน</td></tr>'; }
     document.getElementById('aGowd').textContent=nf.format(sumG);
     document.getElementById('aPen').textContent=nf.format(sumP);
     document.getElementById('aFollow').textContent=nf.format(sumF);
@@ -445,17 +462,17 @@
     document.getElementById('debtTot').textContent=nf.format(debtTot);
     document.getElementById('paidShow').textContent=nf.format(pay);
   }
+
   rowsEl.addEventListener('input',function(e){
     var i=e.target.getAttribute('data-i'),f=e.target.getAttribute('data-f');
     if(i!==null){
-      if(f==='due'||f==='paid'){ e.target.value=formatDMY(e.target.value); }
+      if(f==='due'){ e.target.value=formatDMY(e.target.value); }
       data[i][f]=e.target.value; compute();
     }
   });
-  function pad2(n){ return (n<10?'0':'')+n; }
   rowsEl.addEventListener('click',function(e){
     var b=e.target.closest('[data-del]');
-    if(b){ data.splice(+b.getAttribute('data-del'),1); if(data.length===0)data.push({amt:'',due:'',paid:''}); buildRows(); compute(); return; }
+    if(b){ data.splice(+b.getAttribute('data-del'),1); if(data.length===0)data.push({amt:'',due:''}); buildRows(); compute(); return; }
     var cal=e.target.closest('[data-cal]');
     if(cal){
       var i=cal.getAttribute('data-i'), f=cal.getAttribute('data-cal');
@@ -480,12 +497,11 @@
       }
     }
   });
-  document.getElementById('addBtn').addEventListener('click',function(){ data.push({amt:'',due:'',paid:''}); buildRows(); compute(); });
-  document.getElementById('rate').addEventListener('input',compute);
+  document.getElementById('addBtn').addEventListener('click',function(){ data.push({amt:'',due:''}); buildRows(); compute(); });
   document.getElementById('payIn').addEventListener('input',compute);
   document.getElementById('resetBtn').addEventListener('click',function(){
-    data=[{amt:'',due:'',paid:''},{amt:'',due:'',paid:''},{amt:'',due:'',paid:''}];
-    document.getElementById('rate').value='5'; document.getElementById('payIn').value=''; buildRows(); compute();
+    data=[{amt:'',due:''},{amt:'',due:''},{amt:'',due:''}];
+    document.getElementById('payIn').value=''; buildRows(); compute();
   });
   document.querySelectorAll('.tabbtn').forEach(function(b){
     b.addEventListener('click',function(){
