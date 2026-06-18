@@ -109,6 +109,13 @@
     font-size:13px; color:var(--muted); line-height:1.9;
   }
   .formula b{color:var(--text); font-weight:500;}
+  .info{background:#E6F1FB; border:1px solid #B5D4F4; border-radius:10px; padding:13px 16px; margin-bottom:16px; font-size:13px; color:#0C447C; line-height:1.7;}
+  .info .h{font-weight:600; color:#08305a; display:block; margin-bottom:6px; font-size:14px;}
+  .info ul{margin:4px 0 0; padding-left:18px;}
+  .info li{margin:3px 0;}
+  .info b{color:#08305a; font-weight:600;}
+  .info .ex{margin-top:9px; padding:9px 11px; background:#fff; border-radius:8px; color:var(--text); border-left:3px solid var(--orange);}
+  .info .ex b{color:var(--orange-dark);}
   .tabs{display:flex; gap:6px; margin:20px 0 22px; border-bottom:2px solid var(--line);}
   .tabbtn{font-family:'Kanit',sans-serif; font-size:16px; cursor:pointer; border:none; background:none;
     padding:10px 20px; color:var(--muted); font-weight:500; border-bottom:3px solid transparent; margin-bottom:-2px;}
@@ -153,6 +160,17 @@
   <div class="panel" id="panel-calc">
   <div class="sec-title"><span class="bar"></span>ส่วนที่ 1 — เบี้ยปรับผิดนัด <span class="note">(ดอกเบี้ยผิดนัดสะสมรายเดือน)</span></div>
   <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">เบี้ยปรับ = (ยอดค้างสะสม × 5% ÷ 365) × วันค้างของช่วงนั้น · วันค้างคำนวณอัตโนมัติจากผลต่างวันดิว · งวดแรกยังไม่มีเบี้ยปรับ (เริ่มคิดงวดถัดไป)</div>
+
+  <div class="info">
+    <span class="h">💡 วิธีอ่านตาราง (เปลี่ยนจากเดิม — อ่านก่อนใช้งาน)</span>
+    <ul>
+      <li>แต่ละแถว = บิลของงวดนั้น (รอบเดือนนั้น) กรอกแค่ <b>วันดิว</b> กับ <b>ค่างวด</b> ที่เหลือระบบคิดให้</li>
+      <li><b>งวดแรกที่ค้าง (เก่าสุด) ยังไม่มีค่าปรับและค่าติดตาม</b> — ระบบเริ่มคิดในงวดถัดไป</li>
+      <li>ค่าปรับ + ค่าติดตามของงวดที่ค้าง จะ <b>เลื่อนไปขึ้นบิลในงวดถัดไป 1 งวด</b> (ไม่ขึ้นในแถวงวดที่ค้างเอง)</li>
+      <li>เบี้ยปรับคิดจาก <b>ยอดค้างสะสม</b> (โตขึ้นทุกงวด) × 5% ÷ 365 × จำนวนวันของเดือนนั้น</li>
+    </ul>
+    <div class="ex">ตัวอย่าง: ค้างงวดดิว <b>1/1/2026</b> ค่าปรับ 84.93 + ค่าติดตาม 50 จะไปแสดงในแถว <b>ดิว 1/2/2026</b> (ถัดไป 1 งวด) ไม่ใช่แถว 1/1</div>
+  </div>
 
   <div class="rate-box">
     <label>อัตราเบี้ยปรับต่อปี</label>
@@ -235,6 +253,16 @@
   <div class="panel" id="panel-alloc" style="display:none;">
   <div class="sec-title"><span class="bar"></span>ส่วนที่ 4 — ลำดับการตัดชำระหนี้</div>
   <div style="font-size:12px; color:var(--muted); margin:-6px 0 10px 15px;">ตัดทีละงวดจากงวดเก่าสุดก่อน · ในแต่ละงวดเรียง ค่าปรับ → ค่าติดตาม → ค่างวด · ค่าติดตามรวมค่าลงพื้นที่แล้ว</div>
+
+  <div class="info">
+    <span class="h">💡 ลำดับการตัดเงินที่ลูกค้าจ่ายเข้ามา</span>
+    <ul>
+      <li>ตัด <b>งวดเก่าสุดก่อน</b> เคลียร์งวดนั้นให้หมดก่อนค่อยไปงวดถัดไป</li>
+      <li>ในแต่ละงวดตัดเรียง <b>ค่าปรับ → ค่าติดตาม → ค่างวด</b> (ค่างวด/เงินต้นตัดท้ายสุด)</li>
+      <li>อ่านการไหลจาก <b>ขวาไปซ้าย</b> ตามเลขลำดับ ① ② ③ — สีเขียว = ตัดครบ, เหลือง = ตัดบางส่วน, แดง = ยังไม่ถูกตัด</li>
+    </ul>
+    <div class="ex">งวดสุดท้ายที่เงินไม่พอจะเหลือค้าง และคงค้างนั้นจะถูกนำไปคิดเบี้ยปรับต่อในงวดถัดไป</div>
+  </div>
 
   <div class="rate-box" style="background:#EDEEF6;">
     <label style="color:var(--navy);">ยอดเงินที่ลูกค้าชำระเข้ามา</label>
@@ -453,8 +481,8 @@
     });
     if(alloc.length===0){ ar.innerHTML='<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:14px;">กรอกค่างวดและวันดิวในส่วนที่ 1 ก่อน</td></tr>'; }
     document.getElementById('aGowd').textContent=nf.format(sumG);
-    document.getElementById('aPen').textContent=nf.format(sumP);
     document.getElementById('aFollow').textContent=nf.format(sumF);
+    document.getElementById('aPen').textContent=nf.format(sumP);
     document.getElementById('aClaim').textContent=nf.format(debtTot);
     document.getElementById('aPaid').textContent=nf.format(paidTot);
     document.getElementById('aLeft').textContent=nf.format(leftTot);
